@@ -31,6 +31,8 @@ type ViewOptions struct {
 
 	SelectorArg string
 	BrowserMode bool
+
+	URLOnly bool
 }
 
 func NewCmdView(f *cmdutil.Factory, runF func(*ViewOptions) error) *cobra.Command {
@@ -73,7 +75,9 @@ func NewCmdView(f *cmdutil.Factory, runF func(*ViewOptions) error) *cobra.Comman
 		},
 	}
 
-	cmd.Flags().BoolVarP(&opts.BrowserMode, "web", "w", false, "Open a pull request in the browser")
+	fl := cmd.Flags()
+	fl.BoolVarP(&opts.BrowserMode, "web", "w", false, "Open a pull request in the browser")
+	fl.BoolVarP(&opts.URLOnly, "url-only", "u", false, "Outputs the pull request's URL.")
 
 	return cmd
 }
@@ -98,6 +102,15 @@ func viewRun(opts *ViewOptions) error {
 			fmt.Fprintf(opts.IO.ErrOut, "Opening %s in your browser.\n", utils.DisplayURL(openURL))
 		}
 		return utils.OpenInBrowser(openURL)
+	}
+
+	// TODO: cannot copy/paste this, figure out why
+	if opts.URLOnly {
+		if connectedToTerminal {
+			fmt.Fprintf(opts.IO.Out, pr.URL)
+			// fmt.Fprintf(opts.IO.ErrOut, utils.DisplayURL(openURL))
+		}
+		return nil
 	}
 
 	opts.IO.DetectTerminalTheme()
